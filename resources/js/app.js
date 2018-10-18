@@ -6,6 +6,22 @@
  */
 
 require('./bootstrap');
+require('./bootstrap.js')
+
+import {router} from './router.js'
+
+import Vue from 'vue'
+
+import Vuetify from 'vuetify'
+
+import Vue2Filters from 'vue2-filters'
+// index.js or main.js
+import 'vuetify/dist/vuetify.min.css' // Ensure you are using css-loader
+
+Vue.use(Vuetify)
+Vue.use(Vue2Filters)
+
+
 
 window.Vue = require('vue');
 
@@ -15,8 +31,21 @@ window.Vue = require('vue');
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-Vue.component('example-component', require('./components/ExampleComponent.vue'));
+import Root from './components/RootComponent.vue'
 
 const app = new Vue({
-    el: '#app'
+	el: '#app',
+	router,	//router:router
+
+
+	components: {
+		Root //mount general component
+	}
 });
+
+//
+// Vue.component('example-component', require('./components/ExampleComponent.vue'));
+//
+// const app = new Vue({
+//     el: '#app'
+// });
