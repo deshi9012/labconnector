@@ -18,8 +18,16 @@ class NewMessage implements ShouldBroadcast {
      *
      * @return void
      */
-    public function __construct() {
+
+    public $user;
+    public $message;
+    public $channelId;
+    public function __construct( $user, $message, $channelId) {
         //
+        $this->user = $user;
+        $this->message = $message;
+        $this->channelId = $channelId;
+
     }
 
     /**
@@ -28,7 +36,8 @@ class NewMessage implements ShouldBroadcast {
      * @return \Illuminate\Broadcasting\Channel|array
      */
     public function broadcastOn() {
-        return new Channel('message');
+
+        return new PrivateChannel('channel.' . $this->channelId);
 //        return new PrivateChannel('channel-name');
     }
 }

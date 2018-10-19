@@ -21,6 +21,8 @@ Route::get('/channels','ChannelController@getAllChannels');
 
 Route::post('/channel/create','ChannelController@createChannel');
 
+Route::post('/message/create','MessageController@createMessage');
+
 Route::get('checkAuth','UserController@checkAuth')->middleware('auth');
 
 Route::get('/authenticate', function () {

@@ -6,50 +6,34 @@
 				app
 		>
 			<v-list dense>
-				<template >
-
-					<v-list-tile @click="">
+				<template>
+					<v-subheader inset>Channels</v-subheader>
+					<v-list-tile v-for="channel in channels" :key="channel.id" @click="">
 						<v-list-tile-action>
-							<v-icon>work</v-icon>
+							<v-icon>build</v-icon>
 						</v-list-tile-action>
+
 						<v-list-tile-content>
-							<!--<v-list-tile-title><router-link  >Professions</router-link></v-list-tile-title>-->
+
+							<v-list-tile-title>
+								<router-link :to="{ path: '/channel/' + channel.id}" exac>{{channel.name}}</router-link>
+							</v-list-tile-title>
 						</v-list-tile-content>
 					</v-list-tile>
+					<v-text-field
+							label="Add channel"
+							v-model="newChannel"
+					></v-text-field>
+					<v-btn color="info" @click="addChannel">add</v-btn>
 
+					<v-divider inset></v-divider>
+					<v-subheader inset>Users</v-subheader>
 					<v-list-tile @click="">
 						<v-list-tile-action>
 							<v-icon>build</v-icon>
 						</v-list-tile-action>
 						<v-list-tile-content>
 							<!--<v-list-tile-title><router-link  :to="{ path: '/admin/service'}" exact>Services</router-link></v-list-tile-title>-->
-						</v-list-tile-content>
-					</v-list-tile>
-
-					<v-list-tile @click="">
-						<v-list-tile-action>
-							<v-icon>person</v-icon>
-						</v-list-tile-action>
-						<v-list-tile-content>
-							<!--<v-list-tile-title><router-link  :to="{ path: '/admin/contractor'}" exact>Contractors</router-link></v-list-tile-title>-->
-						</v-list-tile-content>
-					</v-list-tile>
-
-					<v-list-tile @click="">
-						<v-list-tile-action>
-							<v-icon>list_alt</v-icon>
-						</v-list-tile-action>
-						<v-list-tile-content>
-							<!--<v-list-tile-title><router-link  :to="{ path: '/admin/inquiry'}" exact>Inquiries</router-link></v-list-tile-title>-->
-						</v-list-tile-content>
-					</v-list-tile>
-
-					<v-list-tile @click="">
-						<v-list-tile-action>
-							<v-icon>list_alt</v-icon>
-						</v-list-tile-action>
-						<v-list-tile-content>
-							<!--<v-list-tile-title><router-link  :to="{ path: '/admin/page'}" exact>Pages</router-link></v-list-tile-title>-->
 						</v-list-tile-content>
 					</v-list-tile>
 
@@ -85,17 +69,18 @@
 </template>
 
 <script>
-
+	import Channel from './channels/ChannelComponent'
 
 	export default {
 
 		data: () => ({
 			drawer: null,
+			newChannel: '',
 			channels: []
 		}),
 		mounted() {
 			axios.get('channels').then(response => {
-				console.log(response.data);
+				this.channels = response.data;
 			});
 		},
 		props: {
@@ -106,7 +91,7 @@
 			// 	return this.$store.getters.user
 			// }
 		},
-		methods:{
+		methods: {
 			logout: () => {
 				axios.post('/logout').then(response => {
 					location.reload()
@@ -114,10 +99,19 @@
 				}).catch(error => {
 					console.log(error)
 				})
+			},
+			addChannel() {
+				if (this.newChannel) {
+					axios.post('/channel/create', {channelName: this.newChannel}).then(response => {
+						this.channels.push(response.data);
+						this.newChannel = '';
+
+					});
+				}
 			}
 		},
-		components:{
-			// Profession,
+		components: {
+			Channel
 			// ServiceList,
 			// ServiceCreate,
 			// ServiceUpdate,
@@ -134,8 +128,8 @@
 		beforeCreate: () => {
 
 			axios.get('/checkAuth').then(response => {
-			}).catch ( error => {
-				if(error.response.status == '401'){
+			}).catch(error => {
+				if (error.response.status == '401') {
 
 					window.location.href = '/login'
 				}

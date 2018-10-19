@@ -10,8 +10,7 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class CreateChannelGroup
-{
+class CreateChannelGroup implements  ShouldBroadcast{
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
@@ -19,9 +18,10 @@ class CreateChannelGroup
      *
      * @return void
      */
-    public function __construct()
-    {
+    public $user;
+    public function __construct(User $user) {
         //
+        $this->user = $user;
     }
 
     /**
@@ -29,8 +29,7 @@ class CreateChannelGroup
      *
      * @return \Illuminate\Broadcasting\Channel|array
      */
-    public function broadcastOn()
-    {
-        return new PrivateChannel('channel-name');
+    public function broadcastOn() {
+        return new Channel('channel-test');
     }
 }

@@ -50,7 +50,14 @@ window.Pusher = require('pusher-js');
 
 window.Echo = new Echo({
     broadcaster: 'pusher',
+	authEndpoint: 'http://labconnector/broadcasting/auth',
     key: process.env.MIX_PUSHER_APP_KEY,
     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
     encrypted: true
 });
+
+//
+// window.Echo.channel('message').listen('NewMessage', e =>{
+//     console.log('new message');
+//     console.log(e);
+// });
