@@ -8,7 +8,7 @@ class Channel extends Model {
     //
     protected $table = 'channels';
 
-    protected $guarded = ['id'];
+//    protected $guarded = ['id'];
     protected $hidden = ['created_at', 'updated_at'];
 
     public function users() {

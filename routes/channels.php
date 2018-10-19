@@ -12,7 +12,8 @@
 */
 
 Broadcast::channel('channel.{channelId}', function (App\User $user, $channelId) {
-
+//    $user_all = $user->with('channels:channels.id,name')->first();
+//    dd($user_all->channels);
     return true;
 //    return (int) $user->id === (int) $id;
 });
