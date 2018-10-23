@@ -15,11 +15,18 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('getAuthUser','UserController@getAuthUser');
+
 Route::get('/test','ChannelController@getAllChannels');
 
 Route::get('/channels','ChannelController@getAllChannels');
 
 Route::post('/channel/create','ChannelController@createChannel');
+
+Route::get('channel-messages/{id}','ChannelController@channelMessages');
+
+Route::get('channel-join/{channelId}', 'ChannelController@joinChannel');
+//Route::get('checkJoined/{channelId}', 'ChannelController@checkJoined');
 
 Route::post('/message/create','MessageController@createMessage');
 

@@ -42,7 +42,7 @@
 		</v-navigation-drawer>
 		<v-toolbar color="indigo" dark fixed app>
 			<v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-			<v-toolbar-title>Find.us.org</v-toolbar-title>
+			<v-toolbar-title>Labconnector</v-toolbar-title>
 			<v-spacer></v-spacer>
 			<v-btn @click="logout">
 				Logout

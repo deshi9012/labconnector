@@ -9,6 +9,7 @@ require('./bootstrap');
 require('./bootstrap.js')
 
 import {router} from './router.js'
+import {store} from './store.js'
 
 import Vue from 'vue'
 
@@ -31,11 +32,18 @@ window.Vue = require('vue');
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
+// Get logged user info
+window.axios.get('getAuthUser').then(response => {
+	store.commit('setUser', response.data)
+}).catch((error) => {
+	console.log(error)
+})
 import Root from './components/RootComponent.vue'
 
 const app = new Vue({
 	el: '#app',
 	router,	//router:router
+	store,
 
 
 	components: {
