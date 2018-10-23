@@ -13,16 +13,17 @@ class MessageController extends Controller {
         /*TODO make validation
          * */
 
+        
         $channelId = $request->all()['channelId'];
 
         $userId = $request->all()['userId'];
         $user = User::with('channels')->find($userId);
 
-        $joinedChannels = [];
-
-        foreach ($user->channels as $channel) {
-            $joinedChannels[] = $channel->id ;
-        }
+//        $joinedChannels = [];
+//
+//        foreach ($user->channels as $channel) {
+//            $joinedChannels[] = $channel->id ;
+//        }
 
         $name = $request->all()['name'];
 

@@ -16,7 +16,7 @@
 						<v-list-tile-content>
 
 							<v-list-tile-title>
-								<router-link :to="{ path: '/channel/' + channel.id}" exac>{{channel.name}}</router-link>
+								<router-link :to="{ path: '/channels/' + channel.id}" exac>{{channel.name}}</router-link>
 							</v-list-tile-title>
 						</v-list-tile-content>
 					</v-list-tile>
@@ -28,12 +28,14 @@
 
 					<v-divider inset></v-divider>
 					<v-subheader inset>Users</v-subheader>
-					<v-list-tile @click="">
+					<v-list-tile v-for="user in users" :key="user.email" @click="">
 						<v-list-tile-action>
 							<v-icon>build</v-icon>
 						</v-list-tile-action>
 						<v-list-tile-content>
-							<!--<v-list-tile-title><router-link  :to="{ path: '/admin/service'}" exact>Services</router-link></v-list-tile-title>-->
+							<v-list-tile-title>
+								<router-link :to="{ path: '/users/' + user.id}" exac>{{user.first_name}} - {{user.email}}</router-link>
+							</v-list-tile-title>
 						</v-list-tile-content>
 					</v-list-tile>
 
@@ -70,18 +72,25 @@
 
 <script>
 	import Channel from './channels/ChannelComponent'
+	import User from './users/UserComponent'
 
 	export default {
 
 		data: () => ({
 			drawer: null,
 			newChannel: '',
-			channels: []
+			channels: [],
+			users:[]
 		}),
 		mounted() {
 			axios.get('channels').then(response => {
 				this.channels = response.data;
 			});
+
+			axios.get('users').then(response =>{
+				this.users = response.data;
+
+			})
 		},
 		props: {
 			// source: String
@@ -102,7 +111,8 @@
 			},
 			addChannel() {
 				if (this.newChannel) {
-					axios.post('/channel/create', {channelName: this.newChannel}).then(response => {
+					axios.post('/channels' +
+						'/create', {channelName: this.newChannel}).then(response => {
 						this.channels.push(response.data);
 						this.newChannel = '';
 
@@ -111,7 +121,8 @@
 			}
 		},
 		components: {
-			Channel
+			Channel,
+			User
 			// ServiceList,
 			// ServiceCreate,
 			// ServiceUpdate,

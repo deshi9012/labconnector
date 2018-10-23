@@ -12,6 +12,11 @@ class UserController extends Controller {
     //
 
     public function getAllUsers() {
+        $users = User::where('id', '!=', Auth::user()->id)->get();
+        return $users;
+    }
+
+    public function checkAuth() {
 
     }
 
@@ -35,9 +40,5 @@ class UserController extends Controller {
             Auth::login($user);
             return redirect('/room');
         }
-    }
-
-    public function checkAuth() {
-
     }
 }

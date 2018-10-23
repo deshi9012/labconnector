@@ -1,10 +1,10 @@
 <template>
 	<div>
-		<h2>Channel {{id}}</h2>
+		<h2>User {{id}}</h2>
 		<ul id="messages">
 			<li v-for="message in messages" :key="message.id"> {{ message.message }} : {{message.name }}</li>
 		</ul>
-		<v-btn v-if="!flagJoined" @click="join">Join</v-btn>
+		<!--<v-btn v-if="!flagJoined" @click="join">Write first</v-btn>-->
 		<form @submit="send">
 			<input type="text" v-model="newMessage">
 			<button>Send</button>
@@ -17,7 +17,7 @@
 <script>
 	export default {
 
-		name: "ChannelComponent",
+		name: "UserComponent",
 		props: ["id"],
 
 		data() {
@@ -25,15 +25,13 @@
 			return {
 				messages: [],
 				newMessage: '',
-				channelId: this.id,
+				channelId: '',
 				flagJoined: false
 			}
 		},
 		computed: {
 			channel() {
-
 				return window.Echo.join('channel.' + this.channelId);
-
 			},
 			fullName() {
 				return this.$store.getters.user.first_name + ' ' + this.$store.getters.user.last_name;
@@ -41,13 +39,11 @@
 		},
 		methods: {
 			send() {
-				if (this.newMessage && this.flagJoined) {
+				if (this.newMessage) {
 					axios.post('messages/create',
 						{
-							channelId: this.id,
+							channelId: this.channelId,
 							userId: this.$store.getters.user.id,
-
-
 							name: this.fullName,
 							message: this.newMessage
 						})
@@ -58,21 +54,14 @@
 						.then(this.addMessage());
 				}
 			},
-
-			join() {
-				axios.get('channel-join/' + this.id).then(response => {
-
-					this.flagJoined = true;
-					this.getChannelMessages(response.data.id);
-				});
-
-
+			addMessage() {
+				this.messages.push({message: this.newMessage, name: '(Me)' + this.fullName});
+				this.newMessage = '';
 			},
-			getChannelMessages(id) {
-				axios.get('channel-messages/' + id).then((response) => {
-					this.flagJoined = true;
-					console.log(response.data.messages);
-					if (response.data.messages.length > 0) {
+			checkUserMask(userId) {
+				axios.post('/channels/users-mask/check', {userId: userId}).then(response => {
+
+					if (response.data.messages !==undefined && response.data.messages.length > 0) {
 						response.data.messages.forEach((message, index) => {
 							if (this.$store.getters.user.id == message.user.id) {
 								this.messages.push({
@@ -87,46 +76,32 @@
 							}
 						})
 					}
-				}).catch(err => {
-					this.flagJoined = false;
-					console.log(err.response)
+
+					this.flagJoined = true;
+					this.channelId = response.data.id;
+					window.Echo.private('channel.' + response.data.id)
+						.listen('NewMessage', (e) => {/*actions*/
+
+							console.log(e.message.message);
+							this.messages.push({name: e.name, message: e.message.message});
+						});
+					console.log('enter' + response.data.id);
 				})
 			},
-			addMessage() {
-				this.messages.push({message: this.newMessage, name: '(Me)' + this.fullName});
-				this.newMessage = '';
-			}
+
 		},
 		watch: {
 			id(newId, oldId) {
-
-				window.Echo.leave('channel.' + oldId);
+				// console.log('old:' + oldId);
+				window.Echo.leave('channel.' + this.channelId);
 				this.messages = [];
-				console.log('leave channel' + oldId);
-
-
-				window.Echo.private('channel.' + newId)
-					.listen('NewMessage', (e) => {/*actions*/
-
-						console.log(e.message.message);
-						this.messages.push({name: e.name, message: e.message.message});
-					});
-
-				this.getChannelMessages(newId);
+				console.log('leave channel' + this.channelId);
+				this.checkUserMask(newId);
 			}
 		},
 		created() {
-			console.log(this.id);
-			window.Echo.private('channel.' + this.id).listen('NewMessage', e => {
-
-				// console.log(e);
-				// console.log(e.name);
-
-				this.messages.push({name: e.name, message: e.message.message});
-			});
-			this.getChannelMessages(this.id);
-		}
-
+			this.checkUserMask(this.id);
+		},
 	}
 </script>
 

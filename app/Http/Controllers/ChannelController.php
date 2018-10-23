@@ -26,20 +26,23 @@ class ChannelController extends Controller {
     }
 
     public function joinChannel($channelId) {
-        $user = User::first(Auth::user()->id);
-        dd($user);
 
+        $user = User::find(Auth::user()->id);
+
+        $channel = Channel::find($channelId);
+        $channel->users()->save($user);
+        return $channel;
     }
 
     public function channelMessages($id) {
-        if($this->checkJoined($id)) {
+        if ($this->checkJoined($id)) {
             return $channelMessages = Channel::with('messages.user')->find($id);
-        }else {
-            return response()->json(['errorMessage' => 'You are not joined']
-                , 401);
+        } else {
+            return response()->json(['errorMessage' => 'You are not joined'], 401);
         }
 
     }
+
     private function checkJoined($channelId) {
 
         $userId = Auth::user()->id;
@@ -53,5 +56,21 @@ class ChannelController extends Controller {
         }
         //the user is not joined to this channel
         return false;
+    }
+
+    public function checkUsersMask(Request $request) {
+        $id1 = Auth::user()->id;
+        $id2 = $request->all()['userId'];
+        $channel = Channel::with('messages.user')->where('users_mask', $id1 . '_' . $id2)->orWhere('users_mask', $id2 . '_' . $id1)->first();
+        if(!$channel){
+
+            $user1 = User::find($id1);
+            $user2 = User::find($id2);
+            $channel = Channel::create(['users_mask' => $id1 . '_' . $id2 ]);
+            $channel->users()->save($user1);
+            $channel->users()->save($user2);
+
+        }
+        return $channel;
     }
 }

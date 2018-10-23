@@ -23,7 +23,7 @@ class NewMessage implements ShouldBroadcast {
     public $name;
     public $message;
     public $channelId;
-    public function __construct( $user,$name, $message, $channelId) {
+    public function __construct( $user, $name, $message, $channelId) {
         //
         $this->user = $user;
         $this->name = $name;

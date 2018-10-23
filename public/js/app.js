@@ -57013,6 +57013,8 @@ return /******/ (function(modules) { // webpackBootstrap
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_ExampleComponent___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__components_ExampleComponent__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_channels_ChannelComponent__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_channels_ChannelComponent___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__components_channels_ChannelComponent__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_users_UserComponent__ = __webpack_require__(68);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_users_UserComponent___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3__components_users_UserComponent__);
 window.Vue = __webpack_require__(2);
 
 
@@ -57021,7 +57023,8 @@ window.Vue.use(__WEBPACK_IMPORTED_MODULE_0_vue_router__["a" /* default */]);
 
 
 
-var routes = [{ path: '/admin/test', component: __WEBPACK_IMPORTED_MODULE_1__components_ExampleComponent___default.a, name: 'Example' }, { path: '/channel/:id', component: __WEBPACK_IMPORTED_MODULE_2__components_channels_ChannelComponent___default.a, name: 'Chanel', props: true }];
+
+var routes = [{ path: '/admin/test', component: __WEBPACK_IMPORTED_MODULE_1__components_ExampleComponent___default.a, name: 'Example' }, { path: '/channels/:id', component: __WEBPACK_IMPORTED_MODULE_2__components_channels_ChannelComponent___default.a, name: 'Chanel', props: true }, { path: '/users/:id', component: __WEBPACK_IMPORTED_MODULE_3__components_users_UserComponent___default.a, name: 'User', props: true }];
 
 var router = new __WEBPACK_IMPORTED_MODULE_0_vue_router__["a" /* default */]({
 	routes: routes
@@ -60391,10 +60394,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 	},
 	methods: {
 		send: function send() {
-			if (this.newMessage) {
-				axios.post('message/create', {
+			if (this.newMessage && this.flagJoined) {
+				axios.post('messages/create', {
 					channelId: this.id,
-					userId: window.App.user.id,
+					userId: this.$store.getters.user.id,
+
 					name: this.fullName,
 					message: this.newMessage
 				}).then(function (response) {
@@ -60404,38 +60408,37 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 			}
 		},
 		join: function join() {
+			var _this = this;
+
 			axios.get('channel-join/' + this.id).then(function (response) {
-				// 	this.flagJoined = response.data;
-				//
 
-				// if(response.data === true){
-				// 	return true;
-				// }
-				// return false;
-
+				_this.flagJoined = true;
+				_this.getChannelMessages(response.data.id);
 			});
 		},
 		getChannelMessages: function getChannelMessages(id) {
-			var _this = this;
+			var _this2 = this;
 
 			axios.get('channel-messages/' + id).then(function (response) {
-				_this.flagJoined = true;
+				_this2.flagJoined = true;
 				console.log(response.data.messages);
-				response.data.messages.forEach(function (message, index) {
-					if (_this.$store.getters.user.id == message.user.id) {
-						_this.messages.push({
-							message: message.message,
-							name: '(Me)' + message.user.first_name + ' ' + message.user.last_name
-						});
-					} else {
-						_this.messages.push({
-							message: message.message,
-							name: message.user.first_name + ' ' + message.user.last_name
-						});
-					}
-				});
+				if (response.data.messages.length > 0) {
+					response.data.messages.forEach(function (message, index) {
+						if (_this2.$store.getters.user.id == message.user.id) {
+							_this2.messages.push({
+								message: message.message,
+								name: '(Me)' + message.user.first_name + ' ' + message.user.last_name
+							});
+						} else {
+							_this2.messages.push({
+								message: message.message,
+								name: message.user.first_name + ' ' + message.user.last_name
+							});
+						}
+					});
+				}
 			}).catch(function (err) {
-				_this.flagJoined = false;
+				_this2.flagJoined = false;
 				console.log(err.response);
 			});
 		},
@@ -60446,7 +60449,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 	},
 	watch: {
 		id: function id(newId, oldId) {
-			var _this2 = this;
+			var _this3 = this;
 
 			window.Echo.leave('channel.' + oldId);
 			this.messages = [];
@@ -60456,25 +60459,14 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 				/*actions*/
 
 				console.log(e.message.message);
-				_this2.messages.push({ name: e.name, message: e.message.message });
+				_this3.messages.push({ name: e.name, message: e.message.message });
 			});
 
 			this.getChannelMessages(newId);
 		}
-		// id(oldId, newId){
-		// 	// console.log('old: ' + oldId);
-		// 	// console.log('new: ' + newid);
-		// 	Echo.leave('channel.' + oldId);
-		//
-		// 	Echo.channel('channel.' + newId).listen('NewMessage', e => {
-		// 		console.log(newId);
-		// 		console.log(e);
-		// 	});
-		// }
-
 	},
 	created: function created() {
-		var _this3 = this;
+		var _this4 = this;
 
 		console.log(this.id);
 		window.Echo.private('channel.' + this.id).listen('NewMessage', function (e) {
@@ -60482,7 +60474,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 			// console.log(e);
 			// console.log(e.name);
 
-			_this3.messages.push({ name: e.name, message: e.message.message });
+			_this4.messages.push({ name: e.name, message: e.message.message });
 		});
 		this.getChannelMessages(this.id);
 	}
@@ -85577,6 +85569,8 @@ module.exports = Component.exports
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__channels_ChannelComponent__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__channels_ChannelComponent___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__channels_ChannelComponent__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__users_UserComponent__ = __webpack_require__(68);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__users_UserComponent___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__users_UserComponent__);
 //
 //
 //
@@ -85647,6 +85641,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+
 
 
 
@@ -85656,7 +85653,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 		return {
 			drawer: null,
 			newChannel: '',
-			channels: []
+			channels: [],
+			users: []
 		};
 	},
 	mounted: function mounted() {
@@ -85664,6 +85662,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 		axios.get('channels').then(function (response) {
 			_this.channels = response.data;
+		});
+
+		axios.get('users').then(function (response) {
+			_this.users = response.data;
 		});
 	},
 
@@ -85687,7 +85689,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 			var _this2 = this;
 
 			if (this.newChannel) {
-				axios.post('/channel/create', { channelName: this.newChannel }).then(function (response) {
+				axios.post('/channels' + '/create', { channelName: this.newChannel }).then(function (response) {
 					_this2.channels.push(response.data);
 					_this2.newChannel = '';
 				});
@@ -85695,7 +85697,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 		}
 	},
 	components: {
-		Channel: __WEBPACK_IMPORTED_MODULE_0__channels_ChannelComponent___default.a
+		Channel: __WEBPACK_IMPORTED_MODULE_0__channels_ChannelComponent___default.a,
+		User: __WEBPACK_IMPORTED_MODULE_1__users_UserComponent___default.a
 		// ServiceList,
 		// ServiceCreate,
 		// ServiceUpdate,
@@ -85775,7 +85778,7 @@ var render = function() {
                                 "router-link",
                                 {
                                   attrs: {
-                                    to: { path: "/channel/" + channel.id },
+                                    to: { path: "/channels/" + channel.id },
                                     exac: ""
                                   }
                                 },
@@ -85813,20 +85816,49 @@ var render = function() {
                 _vm._v(" "),
                 _c("v-subheader", { attrs: { inset: "" } }, [_vm._v("Users")]),
                 _vm._v(" "),
-                _c(
-                  "v-list-tile",
-                  { on: { click: function($event) {} } },
-                  [
-                    _c(
-                      "v-list-tile-action",
-                      [_c("v-icon", [_vm._v("build")])],
-                      1
-                    ),
-                    _vm._v(" "),
-                    _c("v-list-tile-content")
-                  ],
-                  1
-                )
+                _vm._l(_vm.users, function(user) {
+                  return _c(
+                    "v-list-tile",
+                    { key: user.email, on: { click: function($event) {} } },
+                    [
+                      _c(
+                        "v-list-tile-action",
+                        [_c("v-icon", [_vm._v("build")])],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-list-tile-content",
+                        [
+                          _c(
+                            "v-list-tile-title",
+                            [
+                              _c(
+                                "router-link",
+                                {
+                                  attrs: {
+                                    to: { path: "/users/" + user.id },
+                                    exac: ""
+                                  }
+                                },
+                                [
+                                  _vm._v(
+                                    _vm._s(user.first_name) +
+                                      " - " +
+                                      _vm._s(user.email)
+                                  )
+                                ]
+                              )
+                            ],
+                            1
+                          )
+                        ],
+                        1
+                      )
+                    ],
+                    1
+                  )
+                })
               ]
             ],
             2
@@ -85908,6 +85940,266 @@ if (false) {
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 67 */,
+/* 68 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(69)
+}
+var normalizeComponent = __webpack_require__(4)
+/* script */
+var __vue_script__ = __webpack_require__(71)
+/* template */
+var __vue_template__ = __webpack_require__(72)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = "data-v-46adc210"
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/js/components/users/UserComponent.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-46adc210", Component.options)
+  } else {
+    hotAPI.reload("data-v-46adc210", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 69 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(70);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(51)("e6792750", content, false, {});
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-46adc210\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./UserComponent.vue", function() {
+     var newContent = require("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-46adc210\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./UserComponent.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 70 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(15)(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n*[data-v-46adc210] {\n\tmargin: 0;\n\tpadding: 0;\n\t-webkit-box-sizing: border-box;\n\t        box-sizing: border-box;\n}\nbody[data-v-46adc210] {\n\tfont: 13px Helvetica, Arial;\n}\nform[data-v-46adc210] {\n\tbackground: #000;\n\tpadding: 3px;\n\tposition: fixed;\n\tbottom: 40px;\n\twidth: 80%;\n}\nform input[data-v-46adc210] {\n\tborder: 0;\n\tpadding: 10px;\n\twidth: 90%;\n\tmargin-right: .5%;\n\tbackground-color: white\n}\nform button[data-v-46adc210] {\n\twidth: 9%;\n\tbackground: rgb(130, 224, 255);\n\tborder: none;\n\tpadding: 10px;\n}\n#messages[data-v-46adc210] {\n\tlist-style-type: none;\n\tmargin: 0;\n\tpadding: 0;\n}\n#messages li[data-v-46adc210] {\n\tpadding: 5px 10px;\n\ttext-align: right;\n}\n#messages li[data-v-46adc210]:nth-child(odd) {\n\tbackground: #eee;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 71 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+
+	name: "UserComponent",
+	props: ["id"],
+
+	data: function data() {
+
+		return {
+			messages: [],
+			newMessage: '',
+			channelId: '',
+			flagJoined: false
+		};
+	},
+
+	computed: {
+		channel: function channel() {
+			return window.Echo.join('channel.' + this.channelId);
+		},
+		fullName: function fullName() {
+			return this.$store.getters.user.first_name + ' ' + this.$store.getters.user.last_name;
+		}
+	},
+	methods: {
+		send: function send() {
+			if (this.newMessage) {
+				axios.post('messages/create', {
+					channelId: this.channelId,
+					userId: this.$store.getters.user.id,
+					name: this.fullName,
+					message: this.newMessage
+				}).then(function (response) {
+
+					console.log(response.data);
+				}).then(this.addMessage());
+			}
+		},
+		addMessage: function addMessage() {
+			this.messages.push({ message: this.newMessage, name: '(Me)' + this.fullName });
+			this.newMessage = '';
+		},
+		checkUserMask: function checkUserMask(userId) {
+			var _this = this;
+
+			axios.post('/channels/users-mask/check', { userId: userId }).then(function (response) {
+
+				if (response.data.messages !== undefined && response.data.messages.length > 0) {
+					response.data.messages.forEach(function (message, index) {
+						if (_this.$store.getters.user.id == message.user.id) {
+							_this.messages.push({
+								message: message.message,
+								name: '(Me)' + message.user.first_name + ' ' + message.user.last_name
+							});
+						} else {
+							_this.messages.push({
+								message: message.message,
+								name: message.user.first_name + ' ' + message.user.last_name
+							});
+						}
+					});
+				}
+
+				_this.flagJoined = true;
+				_this.channelId = response.data.id;
+				window.Echo.private('channel.' + response.data.id).listen('NewMessage', function (e) {
+					/*actions*/
+
+					console.log(e.message.message);
+					_this.messages.push({ name: e.name, message: e.message.message });
+				});
+				console.log('enter' + response.data.id);
+			});
+		}
+	},
+	watch: {
+		id: function id(newId, oldId) {
+			// console.log('old:' + oldId);
+			window.Echo.leave('channel.' + this.channelId);
+			this.messages = [];
+			console.log('leave channel' + this.channelId);
+			this.checkUserMask(newId);
+		}
+	},
+	created: function created() {
+		this.checkUserMask(this.id);
+	}
+});
+
+/***/ }),
+/* 72 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", [
+    _c("h2", [_vm._v("User " + _vm._s(_vm.id))]),
+    _vm._v(" "),
+    _c(
+      "ul",
+      { attrs: { id: "messages" } },
+      _vm._l(_vm.messages, function(message) {
+        return _c("li", { key: message.id }, [
+          _vm._v(" " + _vm._s(message.message) + " : " + _vm._s(message.name))
+        ])
+      })
+    ),
+    _vm._v(" "),
+    _c("form", { on: { submit: _vm.send } }, [
+      _c("input", {
+        directives: [
+          {
+            name: "model",
+            rawName: "v-model",
+            value: _vm.newMessage,
+            expression: "newMessage"
+          }
+        ],
+        attrs: { type: "text" },
+        domProps: { value: _vm.newMessage },
+        on: {
+          input: function($event) {
+            if ($event.target.composing) {
+              return
+            }
+            _vm.newMessage = $event.target.value
+          }
+        }
+      }),
+      _vm._v(" "),
+      _c("button", [_vm._v("Send")])
+    ])
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-46adc210", module.exports)
+  }
+}
 
 /***/ })
 /******/ ]);
